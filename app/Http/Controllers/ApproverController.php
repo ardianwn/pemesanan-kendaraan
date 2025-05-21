@@ -148,14 +148,13 @@ class ApproverController extends Controller
         ]);
         
         $persetujuan->update([
-            'status' => 'ditolak',
-            'disetujui_pada' => now(),
+            'status' => 'rejected', // Sesuai dengan nilai enum di migrasi
             'catatan' => $request->catatan,
         ]);
         
         // Update status pemesanan
         $pemesanan = $persetujuan->pemesanan;
-        $pemesanan->update(['status' => 'ditolak']);
+        $pemesanan->update(['status' => 'rejected']); // Menggunakan nilai yang sesuai dengan enum
         
         // Tandai semua persetujuan selanjutnya sebagai dibatalkan
         Persetujuan::where('pemesanans_id', $pemesanan->id)

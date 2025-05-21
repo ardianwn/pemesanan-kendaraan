@@ -73,11 +73,21 @@
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pemesanan->tanggal_pemesanan }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $pemesanan->kendaraan->nama }}</div>
-                                        <div class="text-xs text-gray-500">{{ $pemesanan->kendaraan->nomor_plat }}</div>
+                                        @if($pemesanan->kendaraan)
+                                            <div class="text-sm font-medium text-gray-900">{{ $pemesanan->kendaraan->nama }}</div>
+                                            <div class="text-xs text-gray-500">{{ $pemesanan->kendaraan->nomor_plat }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-500">Kendaraan tidak tersedia</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pemesanan->tujuan }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pemesanan->driver->nama }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if($pemesanan->driver)
+                                            {{ $pemesanan->driver->nama }}
+                                        @else
+                                            <span class="text-gray-400">Driver belum ditentukan</span>
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($pemesanan->status === 'pending')
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">

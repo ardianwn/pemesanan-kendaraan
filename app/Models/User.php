@@ -34,9 +34,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the role associated with this user.
+     * Get the role relation associated with this user (Used for future expansion).
      */
-    public function role(): BelongsTo
+    public function roleRelation(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id')->withTrashed();
     }
@@ -49,10 +49,7 @@ class User extends Authenticatable
      */
     public function hasRole(string $roleSlug): bool
     {
-        if (!$this->relationLoaded('role')) {
-            $this->load('role');
-        }
-        return $this->role && $this->role->slug === $roleSlug && $this->role->is_active;
+        return $this->role === $roleSlug;
     }
 
     /**
@@ -97,12 +94,11 @@ class User extends Authenticatable
     }
     
     /**
-     * Mendapatkan relasi dengan role
+     * Mendapatkan relasi dengan role (legacy method)
      */
     protected function role_relation(): BelongsTo
     {
-        // Deprecated: Use role() instead
-        return $this->role();
+        return $this->roleRelation();
     }
     
     /**
@@ -130,7 +126,12 @@ class User extends Authenticatable
             return true;
         }
         
-        return $this->role && $this->role->hasPermission($permission);
+        // Jika di masa depan ingin menggunakan system permission berbasis role
+        if ($this->role_id && $this->roleRelation) {
+            return $this->roleRelation->hasPermission($permission);
+        }
+        
+        return false;
     }
     
     /**

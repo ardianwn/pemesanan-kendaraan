@@ -148,6 +148,16 @@ class DashboardController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
+        // Redirect admin ke dashboard admin
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        // Redirect approver ke dashboard approver
+        if ($user->isApprover()) {
+            return redirect()->route('approver.dashboard');
+        }
+        
         // Statistik dasar yang berlaku untuk semua pengguna
         $stats = [
             'total_pemesanan' => $user->pemesanans()->count(),
@@ -164,8 +174,18 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
             
+        // Pastikan tidak ada pemesanan tanpa kendaraan atau driver yang menyebabkan error
+        $pemesananTerbaru->each(function ($pemesanan) {
+            if (!$pemesanan->kendaraan) {
+                \Log::warning("Pemesanan ID: {$pemesanan->id} tidak memiliki kendaraan");
+            }
+            if (!$pemesanan->driver) {
+                \Log::warning("Pemesanan ID: {$pemesanan->id} tidak memiliki driver");
+            }
+        });
+            
         // Data khusus untuk admin
-        if ($role === 'admin') {
+        if ($user->isAdmin()) {
             $stats['total_users'] = User::count();
             $stats['total_kendaraan'] = Kendaraan::count();
             $stats['total_drivers'] = Driver::count();
@@ -176,7 +196,7 @@ class DashboardController extends Controller
         }
         
         // Data khusus untuk approver
-        if ($role === 'approver') {
+        if ($user->isApprover()) {
             $stats['persetujuan_pending'] = Persetujuan::where('approver_id', $user->id)
                                                      ->where('status', 'pending')
                                                      ->count();
@@ -196,7 +216,8 @@ class DashboardController extends Controller
                                             ->latest()
                                             ->take(5)
                                             ->get();
-                                            
+            
+            $role = 'approver'; // Untuk view
             return view('dashboard', compact(
                 'stats',
                 'pemesananTerbaru',
@@ -206,7 +227,8 @@ class DashboardController extends Controller
         }
         
         // Tambahkan data chart untuk admin
-        if ($role === 'admin') {
+        if ($user->isAdmin()) {
+            $role = 'admin'; // Untuk view
             return view('dashboard', compact(
                 'stats',
                 'pemesananTerbaru',
@@ -216,6 +238,7 @@ class DashboardController extends Controller
         }
         
         // View default untuk user biasa
+        $role = 'user'; // Untuk view
         return view('dashboard', compact(
             'stats',
             'pemesananTerbaru',
